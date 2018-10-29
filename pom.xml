@@ -11,7 +11,7 @@
     <modules>
       <module>Currency Exchange Service</module>
       <module>Eureka server</module>
-      <module>fixer-service</module>
+      <module>fixer service</module>
       <module>Zuul server</module>
     </modules>
 
