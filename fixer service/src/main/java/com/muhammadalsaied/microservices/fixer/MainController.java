@@ -1,7 +1,11 @@
 package com.muhammadalsaied.microservices.fixer;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Created by @author Muhammed Alsaied On Oct 27, 2018
@@ -17,17 +22,23 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 public class MainController {
 
-    public static final String FIXER_ACCESS_KEY = "718ed5f346c942225f9e57de7faab99f";
+    @Value("${fixer-access-key}")
+    private String FIXER_ACCESS_KEY;
+    private String FIXER_URI = "http://data.fixer.io/api/latest?access_key={key}&symbols={from},{to}";
     private static Logger LOG = LoggerFactory.getLogger(MainController.class);
 
     @GetMapping(value = "from/{from}/to/{to}")
     public FixerResponce getResult(@PathVariable String from, @PathVariable String to) {
         RestTemplate restTemplate = new RestTemplate();
-        try {
-            ResponseEntity<FixerResponce> responce = restTemplate.exchange(
-                    "http://data.fixer.io/api/latest?access_key=718ed5f346c942225f9e57de7faab99f&symbols=" + from + "," + to,
-                    HttpMethod.GET, HttpEntity.EMPTY, FixerResponce.class);
+        Map<String, String> params = new HashMap<>();
+        params.put("key", FIXER_ACCESS_KEY);
+        params.put("from", from);
+        params.put("to", to);
+        URI uri = UriComponentsBuilder.fromUriString(FIXER_URI).build(params);
 
+        try {
+            ResponseEntity<FixerResponce> responce = restTemplate.exchange(uri, HttpMethod.GET,
+                    HttpEntity.EMPTY, FixerResponce.class);
             FixerResponce fixerResponce = responce.getBody();
             LOG.info("{}", fixerResponce);
             if (fixerResponce.getSuccess() == true) {
